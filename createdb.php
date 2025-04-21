@@ -19,4 +19,5 @@ if (mysqli_query($conn, $sql)) {
 }
 
 mysqli_close($conn);
+// Create a new connection to the newly created database
 ?>
