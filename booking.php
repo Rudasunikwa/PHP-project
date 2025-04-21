@@ -1,71 +1,49 @@
-<?php include 'header.php'; ?>
+<?php 
+include 'header.php';
+include 'auth.php';
+
+// Require login to access this page
+requireLogin();
+?>
 <html>
     <head>
-
+    <style>
+        body { font-family: sans-serif; }
+        form { display: flex; flex-direction: column; width: 300px; margin: 20px auto; }
+        label { margin-bottom: 5px; }
+        select, input[type='number'] { padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; }
+        input[type='submit'] { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        h1 { text-align: center; }
+    </style>
     </head>
     <body>
-        <!--
-    Booking form
-        -->
-
+        <h1>Event Booking</h1>
 
         <?php
-// Sample event data (you would likely retrieve this from a database)
-$events = array(
-    array("id" => 1, "name" => "Concert in the Park", "date" => "2025-07-15", "time" => "7:00 PM"),
-    array("id" => 2, "name" => "Art Exhibition", "date" => "2024-03-22", "time" => "2:00 PM"),
-    array("id" => 3, "name" => "Comedy Show", "date" => "2025-04-29", "time" => "8:00 PM"),
-);
+        // Sample event data (you would likely retrieve this from a database)
+        $events = array(
+            array("id" => 1, "name" => "Concert in the Park", "date" => "2025-07-15", "time" => "7:00 PM"),
+            array("id" => 2, "name" => "Art Exhibition", "date" => "2024-03-22", "time" => "2:00 PM"),
+            array("id" => 3, "name" => "Comedy Show", "date" => "2025-04-29", "time" => "8:00 PM"),
+        );
+        ?>
 
-echo "<!DOCTYPE html>";
-echo "<html>";
-echo "<head>";
-echo "<title>Event Booking</title>";
-// Basic CSS styling (you'll likely want to improve this)
-echo "<style>";
-echo "body { font-family: sans-serif; }";
-echo "form { display: flex; flex-direction: column; width: 300px; margin: 20px auto; }";
-echo "label { margin-bottom: 5px; }";
-echo "select, input[type='number'] { padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; }";
-echo "input[type='submit'] { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }";
-echo "h1 { text-align: center; }";
-echo "</style>";
-echo "</head>";
-echo "<body>";
+        <form action='paymentmethod.php' method='post'>
+            <label for='event'>Select Event:</label>
+            <select name='event_id' id='event'>
+                <?php foreach ($events as $event): ?>
+                    <option value='<?php echo $event['id']; ?>'>
+                        <?php echo $event['name'] . " (" . $event['date'] . " " . $event['time'] . ")"; ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
 
-echo "<h1>Event Booking</h1>";
-// Form action would point to your booking processing script
+            <label for='tickets'>Number of Tickets:</label>
+            <input type='number' name='num_tickets' id='tickets' min='1' required>
 
-echo "<form action='paymentmethod.php' method='post'>"; 
-echo "<label for='event'>Select Event:</label>";
-echo "<select name='event_id' id='event'>";
-foreach ($events as $event) {
-    echo "<option value='" . $event['id'] . "'>" . $event['name'] . " (" . $event['date'] . " " . $event['time'] . ")</option>";
-}
-echo "</select>";
-
-echo "<label for='tickets'>Number of Tickets:</label>";
-echo "<input type='number' name='num_tickets' id='tickets' min='1' required>";
-
-echo "<input type='submit' value='Book Now'>";
-
-echo "</form>";
-
-echo "</body>";
-echo "</html>";
-
-?>
-        <!-- <form method="POST">
-            <input type="text" name="name" placeholder="Name"><br>
-            <input type="email" name="email" placeholder="Email"><br>
-            <input type="text" name="phone" placeholder="Phone"><br>
-            <input type="text" name="address" placeholder="Address"><br>
-            <input type="text" name="country" placeholder="Country"><br>
-            <input type="date" name="date" placeholder="date"><br>
-            <input type="time" name="time" placeholder="time"><br>
-            <input type="number" name="number" placeholder="number of people"><br>
-            <button type="submit">Book</button>
-         -->
+            <input type='hidden' name='user_id' value='<?php echo getCurrentUserId(); ?>'>
+            <input type='submit' value='Book Now'>
+        </form>
     </body>
 </html>
 <?php include 'footer.php'; ?>
