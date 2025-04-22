@@ -1,4 +1,46 @@
-<?php include 'header.php'; ?>
+<?php 
+session_start();
+include 'header.php';
+include 'database.php';
+
+// Check if user is already logged in
+if(isset($_SESSION['user_id'])) {
+    header("Location: homepage.php");
+    exit();
+}
+
+// Process login form submission
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = htmlspecialchars($_POST["name"]);
+    $password = $_POST["password"];
+    
+    // Prepare SQL statement to prevent SQL injection
+    $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+        // Verify the password
+        if (password_verify($password, $user['password'])) {
+            // Password is correct, create session
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            
+            // Redirect to homepage or dashboard
+            header("Location: homepage.php");
+            exit();
+        } else {
+            $error_message = "Invalid password!";
+        }
+    } else {
+        $error_message = "User not found!";
+    }
+    
+    $stmt->close();
+}
+?>
 
 <html>
     <head>
@@ -33,98 +75,29 @@
                 cursor: pointer;
                 justify-content: center;
             }
+            .error {
+                color: red;
+                margin-bottom: 10px;
+            }
         </style>
     </head>
 <body>
     
+<div style="text-align: center; margin: 20px 0;">
+    <h2>Login to Your Account</h2>
+    <?php if(isset($error_message)): ?>
+        <p class="error"><?php echo $error_message; ?></p>
+    <?php endif; ?>
+</div>
 
-<form method="POST" action="booking.php">
+<form method="POST" action="login.php">
     <i class="fa fa-user"></i>
     <input type="text" name="name" placeholder="Username" required><br>
     <input type="password" name="password" placeholder="Password" required><br>
     <button type="submit">Sign in</button>
+    <p style="margin-top: 15px;">Don't have an account? <a href="registration.php">Register here</a>.</p>
 </form>
-
-<!-- <p>Don't have an account? <a href="signup.php">Create one here</a>.</p>
-
-<p>Or you can sign in with <a href="google_signin.php">Google</a>.</p> -->
-
-<?php 
-if(isset($_POST["name"])){
-    $name = htmlspecialchars($_POST["name"]); // Clean input for safety
-    $password = htmlspecialchars($_POST["password"]); // Clean input for safety
-
-    echo "<p>Name is: $name</p>";
-    echo "<p>Password is: $password</p>";
-}
-?>
 
 </body>
 </html>
-<!-- <?php include 'footer.php'; ?> -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-</head>
-<body>
-    <h2>Login Form</h2>
-    <form method="POST" action="login.php">
-        <input type="text" name="username" placeholder="Username" required><br>
-        <input type="password" name="password" placeholder="Password" required><br>
-        <button type="submit">Login</button>
-    </form>
-
-    <?php
-    session_start();
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $conn = new mysqli("localhost", "root", "", "user_registration");
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
-
-        $username = htmlspecialchars($_POST["username"]);
-        $password = $_POST["password"];
-
-        $stmt = $conn->prepare("SELECT password FROM users WHERE username = ?");
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        $stmt->store_result();
-        $stmt->bind_result($hashed_password);
-
-        if ($stmt->num_rows > 0) {
-            $stmt->fetch();
-            if (password_verify($password, $hashed_password)) {
-                $_SESSION['username'] = $username;
-                header('Location: user_info.php');
-                exit();
-            } else {
-                echo "<p>Incorrect password!</p>";
-            }
-        } else {
-            echo "<p>No user found with that username!</p>";
-        }
-
-        $stmt->close();
-        $conn->close();
-    }
-    ?>
-</body>
-</html> -->
+<?php include 'footer.php'; ?>
